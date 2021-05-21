@@ -132,6 +132,14 @@ def recv_wait(conn):
             return data
 
 
+print("=================================")
+print("=     ServerMonke Web Server    =")
+print("=  Copyright© ReturnToMonke inc =")
+print("=  2021                         =")
+print("=================================\n")
+
+print(f"Listening to port {PORT} for connections...\n")
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     s.bind((HOST, PORT))
