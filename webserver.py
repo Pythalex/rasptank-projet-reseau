@@ -16,6 +16,7 @@ buffer = {}
 
 ROBOT_AVAILABLE = 1
 ROBOT_UNAVAILABLE = 2
+ROBOT_DEFAULT_MAX_SPEED = 80
 
 class Protocol:
     forward = "forward"
@@ -116,6 +117,7 @@ def wait_input(conn, addr, robotname):
             speed_int = int(regex_speed.match(data).groups()[0])
             if not speed_int in range(0, 101):
                 speed_int = 10
+            speed_int = min(speed_int, ROBOT_DEFAULT_MAX_SPEED)
             buffer[robotname].append(f"{Protocol.speed} {speed_int}")
         else:
             print(f"[THREAD {robotname}] Command not understood : {data}")

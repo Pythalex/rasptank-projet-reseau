@@ -18,22 +18,36 @@ conn = None
 IN_BYTE_MAX_SIZE = 1024
 ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 # 10 ms
 
+speed_set = 100
+speed_step = 10
+
 class Protocol:
     forward = b"forward"
     backward = b"backward"
     left = b"left"
     right = b"right"
-    speed = b"speed 100"
+    speed = "speed"
     move_command = [forward, backward, left, right]
 
     connect = "connect"
 
+
+def get_speed(decrease):
+    global speed_set
+    if decrease:
+        speed_set = max(0, speed_set - speed_step)
+    else:
+        speed_set = min(100, speed_set + speed_step)
+    return f"{Protocol.speed} {speed_set}".encode()
+
+
 key_binding = {
-    "up"    : Protocol.forward,
-    "down"  : Protocol.backward,
-    "left"  : Protocol.left,
-    "right" : Protocol.right,
-    "s"     : Protocol.speed
+    "up"    : lambda : Protocol.forward,
+    "down"  : lambda : Protocol.backward,
+    "left"  : lambda : Protocol.left,
+    "right" : lambda : Protocol.right,
+    "q"     : lambda : get_speed(decrease=True),
+    "s"     : lambda : get_speed(decrease=False)
 }
     
 
@@ -57,10 +71,12 @@ def recv_wait(conn):
 
 def on_press(key):
     try:
-        conn.sendall(key_binding[key.name])
+        conn.sendall(key_binding[key.name]())
     except:
         try:
-            conn.sendall(key_binding[key.char])
+            cmd = key_binding[key.char]()
+            print(cmd.decode("utf-8"))
+            conn.sendall(cmd)
         except:
             pass
 

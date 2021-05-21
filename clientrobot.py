@@ -8,6 +8,7 @@ import socket
 import time
 import sys
 import threading
+import re
 
 # test
 HOST = '192.168.1.61'  # The server's hostname or IP address
@@ -23,29 +24,21 @@ in_movement = False
 IN_BYTE_MAX_SIZE = 1024
 ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 #s
 
-class StoppableThread(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        super(StoppableThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-        
-    def stop(self):
-        self._stop_event.set()
-        
-    def stopped(self):
-        return self._stop_event.is_set()
 
 class Protocol:
     forward = "forward"
     backward = "backward"
     left = "left"
     right = "right"
-    speed = "speed 100"
+    speed = "speed"
     move_command = [forward, backward, left, right]
 
     register = "register"
 
 STOP_MOVEMENT = b"DS"
 STOP_TURNING = b"TS"
+
+regex_speed = re.compile(rf"{Protocol.speed} (\d)+")
 
 
 key_binding = {
@@ -59,13 +52,7 @@ def decode_byte_to_str(b):
     except:
         print(f"[THREAD] Error when decoding input byte as utf-8: {b}")
         return None
-    
-def chrono(timer, callback):
-    try:
-        time.sleep(timer)
-        callback()
-    except:
-        pass
+
 
 def stop():
     global conn_robot
@@ -88,17 +75,21 @@ def wait_for_input():
         except:
             data = None
         
-        if data in Protocol.move_command:
-            print("")
-            in_movement = True
-            conn_robot.sendall(data.encode())
-        elif data == Protocol.speed:
-            print("Implement speed")
-        else:
+        if not data:
             if in_movement:
                 in_movement = False
                 conn_robot.sendall(STOP_MOVEMENT)
                 conn_robot.sendall(STOP_TURNING)
+        elif data in Protocol.move_command:
+            #print("")
+            in_movement = True
+            conn_robot.sendall(data.encode())
+        elif regex_speed.match(data):
+            print(f"Change speed to {data}")
+            conn_robot.sendall(data.encode())
+        else:
+            print(f"Not recognized : {data}")
+            pass
 
 
 def main():
