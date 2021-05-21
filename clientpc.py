@@ -1,3 +1,9 @@
+#
+# Auteur : ReturnToMonke inc
+# Copyright 2021 tous droits réservés
+# Reject Humanity tm
+#
+
 import socket
 import threading
 import sys
@@ -64,6 +70,12 @@ def on_release(key):
 
 def main():
     global conn
+
+    print("=================================")
+    print("=     CONTROLEUR ROBOTSWAG      =")
+    print("=  Copyright© ReturnToMonke inc =")
+    print("=  2021                         =")
+    print("=================================")
 
     robotname = input("Enter robot name to connect to : ")
 
