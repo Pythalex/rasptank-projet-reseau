@@ -16,7 +16,7 @@ PORT = 9000        # The port used by the server
 conn = None
 
 IN_BYTE_MAX_SIZE = 1024
-ROBOT_BUFFER_REFRESH_TIME = 10 #ms
+ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 # 10 ms
 
 class Protocol:
     forward = b"forward"
@@ -59,7 +59,10 @@ def on_press(key):
     try:
         conn.sendall(key_binding[key.name])
     except:
-        conn.sendall(key_binding[key.char])
+        try:
+            conn.sendall(key_binding[key.char])
+        except:
+            pass
 
 def on_release(key):
     print('{0} release'.format(

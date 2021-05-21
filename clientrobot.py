@@ -7,9 +7,10 @@
 import socket
 import time
 import sys
+import threading
 
-
-HOST = '127.0.0.1'  # The server's hostname or IP address
+# test
+HOST = '192.168.1.61'  # The server's hostname or IP address
 PORT = 9000        # The port used by the server
 conn = None
 
@@ -17,8 +18,21 @@ ROBOT_HOST = ''
 ROBOT_PORT = 10223
 conn_robot = None
 
+in_movement = False
+
 IN_BYTE_MAX_SIZE = 1024
-ROBOT_BUFFER_REFRESH_TIME = 10 #ms
+ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 #s
+
+class StoppableThread(threading.Thread):
+    def __init__(self, *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+        
+    def stop(self):
+        self._stop_event.set()
+        
+    def stopped(self):
+        return self._stop_event.is_set()
 
 class Protocol:
     forward = "forward"
@@ -29,7 +43,10 @@ class Protocol:
     move_command = [forward, backward, left, right]
 
     register = "register"
-    
+
+STOP_MOVEMENT = b"DS"
+STOP_TURNING = b"TS"
+
 
 key_binding = {
     "forward" : "forward"
@@ -42,30 +59,52 @@ def decode_byte_to_str(b):
     except:
         print(f"[THREAD] Error when decoding input byte as utf-8: {b}")
         return None
+    
+def chrono(timer, callback):
+    try:
+        time.sleep(timer)
+        callback()
+    except:
+        pass
 
-
-def recv_wait(conn):
-    while True:
-        data = decode_byte_to_str(conn.recv(IN_BYTE_MAX_SIZE))
-        if not data:
-            time.sleep(ROBOT_BUFFER_REFRESH_TIME)
-        else:
-            return data
-
+def stop():
+    global conn_robot
+    
+    conn_robot.sendall(STOP_MOVEMENT)
+    conn_robot.sendall(STOP_TURNING)
 
 def wait_for_input():
+    global last_move_command
+    global conn, conn_robot
+    global in_movement
+    global callback_timer
+
+    conn.settimeout(0.1)
+    
     while True:
-        data = recv_wait(conn)
+
+        try:
+            data = decode_byte_to_str(conn.recv(IN_BYTE_MAX_SIZE))
+        except:
+            data = None
+        
         if data in Protocol.move_command:
-            print("Implement move")
+            print("")
+            in_movement = True
+            conn_robot.sendall(data.encode())
         elif data == Protocol.speed:
             print("Implement speed")
         else:
-            print(f"Command '{data}' not understood")
+            if in_movement:
+                in_movement = False
+                conn_robot.sendall(STOP_MOVEMENT)
+                conn_robot.sendall(STOP_TURNING)
 
 
 def main():
     global conn
+    global conn_robot
+
     global HOST
     global PORT
 
@@ -91,7 +130,8 @@ def main():
     print(f"Connecting to robot server at {ROBOT_HOST}:{ROBOT_PORT}")
     conn_robot = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn_robot.connect((ROBOT_HOST, ROBOT_PORT))
-
+    print(f"Connected at local server")
+    
     print(f"Connecting to server at {HOST}:{PORT}")
 
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

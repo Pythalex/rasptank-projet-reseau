@@ -5,10 +5,10 @@ import threading
 import re
 import time
 
-HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
+HOST = ''  # Standard loopback interface address (localhost)
 PORT = 9000        # Port to listen on (non-privileged ports are > 1023)
 IN_BYTE_MAX_SIZE = 1024
-ROBOT_BUFFER_REFRESH_TIME = 10 #ms
+ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 #ms
 
 pc_to_robot_map = {}
 registered_robots = {}
@@ -83,7 +83,7 @@ def process_register(conn, addr, robotname):
 def read_input_for_robot(conn, addr, robotname):
      
     while True:
-        time.sleep(ROBOT_BUFFER_REFRESH_TIME / 1000)
+        time.sleep(ROBOT_BUFFER_REFRESH_TIME)
         while len(buffer[robotname]) > 0:
             command = buffer[robotname].pop()
             conn.sendall(command.encode())
@@ -105,7 +105,7 @@ def process_connect(conn, addr, robotname):
 
 def wait_input(conn, addr, robotname):
     while True:
-        print(f"[THREAD {robotname}] Waiting for input...")
+        #print(f"[THREAD {robotname}] Waiting for input...")
         data = recv_wait(conn)
         if not data:
             continue
