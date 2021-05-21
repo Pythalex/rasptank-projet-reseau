@@ -10,7 +10,7 @@ def connect_server_register(robot) :
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect((HOST, PORT))
     response = register_connect_robot(client_socket, f"register {robot}")
-    print("here this stuff : ", response)
+    print("response: ", response)
     client_socket.close()
     # if response == "ok" :
     #     print("Robot has been registered")
@@ -39,14 +39,27 @@ def connect_server_connect_robot(robot) :
     print("here thee here thee: ", response)
     return response
 
+print("Should be unknown : ", end="")
 assert connect_server_connect_robot("swag") == "unknown"
+
+print("Should be ok", end="")
 assert connect_server_register("swag") == "ok"
+
+print("Should be ok", end="")
 assert connect_server_connect_robot("swag") == "ok"
+
+print("Should be already_used", end="")
 assert connect_server_connect_robot("swag") == "already_used"
+
+print("Should be unknown", end="")
 assert connect_server_connect_robot("hello") == "unknown"
-assert connect_server_register("swag") == "alread_used"
 
+print("Should be already_used", end="")
+assert connect_server_register("swag") == "already_used"
 
+print("===================")
+print("= Everything is OK.")
+print("===================")
 
 #connect_server_register("swag")
 #print('Received', repr(data))

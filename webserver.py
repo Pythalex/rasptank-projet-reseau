@@ -93,6 +93,7 @@ def process_connect(conn, addr, robotname):
     if robotname in registered_robots:
         if registered_robots[robotname] == ROBOT_AVAILABLE:
             pc_to_robot_map[(conn, addr)] = robotname
+            registered_robots[robotname] = ROBOT_UNAVAILABLE
             conn.sendall(Protocol.ok)
         else:
             conn.sendall(Protocol.already_used)
