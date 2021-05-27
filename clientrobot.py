@@ -20,6 +20,7 @@ ROBOT_PORT = 10223
 conn_robot = None
 
 in_movement = False
+turning = False
 
 IN_BYTE_MAX_SIZE = 1024
 ROBOT_BUFFER_REFRESH_TIME = 10 / 1000 #s
@@ -31,7 +32,8 @@ class Protocol:
     left = "left"
     right = "right"
     speed = "speed"
-    move_command = [forward, backward, left, right]
+    move_command = [forward, backward]
+    turning = [left, right]
 
     register = "register"
 
@@ -63,7 +65,7 @@ def stop():
 def wait_for_input():
     global last_move_command
     global conn, conn_robot
-    global in_movement
+    global in_movement, turning
     global callback_timer
 
     conn.settimeout(0.1)
@@ -79,10 +81,15 @@ def wait_for_input():
             if in_movement:
                 in_movement = False
                 conn_robot.sendall(STOP_MOVEMENT)
+            if turning:
+                turning = False
                 conn_robot.sendall(STOP_TURNING)
         elif data in Protocol.move_command:
             #print("")
             in_movement = True
+            conn_robot.sendall(data.encode())
+        elif data in Protocol.turning:
+            turning = True
             conn_robot.sendall(data.encode())
         elif regex_speed.match(data):
             print(f"Change speed to {data}")

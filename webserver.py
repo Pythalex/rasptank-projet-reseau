@@ -4,6 +4,7 @@ import socket
 import threading
 import re
 import time
+import random
 
 HOST = ''  # Standard loopback interface address (localhost)
 PORT = 9000        # Port to listen on (non-privileged ports are > 1023)
@@ -17,6 +18,9 @@ buffer = {}
 ROBOT_AVAILABLE = 1
 ROBOT_UNAVAILABLE = 2
 ROBOT_DEFAULT_MAX_SPEED = 80
+
+BONUSMALUS_PERIOD = 5 # s temps de pause entre deux bonus malus
+BONUSMALUS_TIME = 3 # s durée du bonus/malus
 
 class Protocol:
     forward = "forward"
@@ -132,6 +136,57 @@ def recv_wait(conn):
             return data
 
 
+def bonus_malus_thread():
+
+    input("Enter to start bonus malus...")
+
+    low_speed = int(ROBOT_DEFAULT_MAX_SPEED / 2)
+
+    while True:
+
+        # sleep for period
+        time.sleep(BONUSMALUS_PERIOD)
+
+        if len(pc_to_robot_map) == 0:
+            continue
+
+        print("[BONUS MALUS] Choosing robot")
+
+        # choose random robot
+        chosen = random.randint(0, len(pc_to_robot_map) - 1)
+        chosen_robot = pc_to_robot_map[list(pc_to_robot_map)[chosen]]
+
+        # choose random bonus/malus
+        bonusmalus = random.randint(0, 3)
+
+        started = time.time()
+
+        print(f"[BONUS MALUS] Sending {bonusmalus} to {chosen_robot} for {BONUSMALUS_TIME}s")
+
+        # send command for given time
+        while time.time() - started < BONUSMALUS_TIME:
+
+            if bonusmalus == 0: # bonus speed
+                buffer[chosen_robot].append(f"{Protocol.speed} 100")
+            elif bonusmalus == 1: # malus speed
+                buffer[chosen_robot].append(f"{Protocol.speed} {low_speed}")
+            elif bonusmalus == 2: # force left
+                buffer[chosen_robot].append(Protocol.left)
+            elif bonusmalus == 3: # force right
+                buffer[chosen_robot].append(Protocol.right)
+            elif bonusmalus == 4: # force backward
+                buffer[chosen_robot].append(Protocol.backward)
+
+            time.sleep(0.1) # 100ms
+
+        if bonusmalus in (0, 1): # reset speed
+            buffer[chosen_robot].append(f"{Protocol.speed} {ROBOT_DEFAULT_MAX_SPEED}")
+
+        print(f"[BONUS MALUS] Waiting {BONUSMALUS_PERIOD}s")
+
+
+
+
 print("=================================")
 print("=     ServerMonke Web Server    =")
 print("=  Copyright© ReturnToMonke inc =")
@@ -144,6 +199,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     s.bind((HOST, PORT))
     s.listen()
+
+    thread_bonus_malus = threading.Thread(target=bonus_malus_thread)
+    thread_bonus_malus.start()
 
     while True:
         conn, addr = s.accept()

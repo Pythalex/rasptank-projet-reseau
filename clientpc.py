@@ -75,7 +75,7 @@ def on_press(key):
     except:
         try:
             cmd = key_binding[key.char]()
-            print(cmd.decode("utf-8"))
+            #print(cmd.decode("utf-8"))
             conn.sendall(cmd)
         except:
             pass
