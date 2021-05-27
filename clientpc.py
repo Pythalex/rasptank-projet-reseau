@@ -89,6 +89,7 @@ def on_release(key):
 
 def main():
     global conn
+    global HOST, PORT
 
     print("=================================")
     print("=     CONTROLEUR ROBOTSWAG      =")
@@ -96,7 +97,16 @@ def main():
     print("=  2021                         =")
     print("=================================")
 
-    robotname = input("Enter robot name to connect to : ")
+    print("python clientpc.py robotname [hostip] [hostport]")
+
+    robotname = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        HOST = sys.argv[2]
+    if len(sys.argv) > 3:
+        PORT = int(sys.argv[3])
+
+    #robotname = input("Enter robot name to connect to : ")
 
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.connect((HOST, PORT))

@@ -114,7 +114,7 @@ def main():
     if len(sys.argv) > 2:
         HOST = sys.argv[2]
     if len(sys.argv) > 3:
-        PORT = sys.argv[3]
+        PORT = int(sys.argv[3])
 
     print(f"This robot will have name {robotname}")
 
