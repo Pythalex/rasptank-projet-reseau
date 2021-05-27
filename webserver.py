@@ -158,24 +158,26 @@ def bonus_malus_thread():
 
         # choose random bonus/malus
         bonusmalus = random.randint(0, 3)
+        bonusmalustype = ""
+        if bonusmalus == 0: # bonus speed
+            bonusmalustype = f"{Protocol.speed} 100"
+        elif bonusmalus == 1: # malus speed
+            bonusmalustype = f"{Protocol.speed} {low_speed}"
+        elif bonusmalus == 2: # force left
+            bonusmalustype = Protocol.left
+        elif bonusmalus == 3: # force right
+            bonusmalustype = Protocol.right
+        elif bonusmalus == 4: # force backward
+            bonusmalustype = Protocol.backward
 
         started = time.time()
 
-        print(f"[BONUS MALUS] Sending {bonusmalus} to {chosen_robot} for {BONUSMALUS_TIME}s")
+        print(f"[BONUS MALUS] Sending {bonusmalustype} to {chosen_robot} for {BONUSMALUS_TIME}s")
 
         # send command for given time
         while time.time() - started < BONUSMALUS_TIME:
 
-            if bonusmalus == 0: # bonus speed
-                buffer[chosen_robot].append(f"{Protocol.speed} 100")
-            elif bonusmalus == 1: # malus speed
-                buffer[chosen_robot].append(f"{Protocol.speed} {low_speed}")
-            elif bonusmalus == 2: # force left
-                buffer[chosen_robot].append(Protocol.left)
-            elif bonusmalus == 3: # force right
-                buffer[chosen_robot].append(Protocol.right)
-            elif bonusmalus == 4: # force backward
-                buffer[chosen_robot].append(Protocol.backward)
+            buffer[chosen_robot].append(bonusmalustype)
 
             time.sleep(0.1) # 100ms
 
