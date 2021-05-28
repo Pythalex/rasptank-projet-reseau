@@ -1,8 +1,13 @@
 Trinome:
 
 BONIN Alexandre
+    -> majoritairement le code serveur + protocole
+
 ELANBARI Anass
+    -> majoritairement montage + client robot
+
 ROUFF Simon
+    -> majoritairement montage du robot + mise en place du raspberry
 
 Passage N°2 avec bonus/malus avec notre serveur
 -> arrivé 2e (roue pétée)
